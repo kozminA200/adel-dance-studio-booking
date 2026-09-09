@@ -51,25 +51,66 @@
       box-shadow: var(--shadow);
       border: 1px solid var(--border-color);
       overflow: hidden;
+      position: relative;
     }
 
     .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 30px;
+      padding: 12px 25px;
       background: #fbf0f3;
       border-bottom: 1px solid var(--border-color);
       flex-wrap: wrap;
       gap: 15px;
     }
 
-    /* Единый стиль заголовка */
-    .brand {
-      font-size: 1.5rem;
+    /* Левый блок: Кнопка с логотипом + Текстовое название */
+    .brand-header-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Кнопка с логотипом слева */
+    .logo-btn {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      padding: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(216, 112, 147, 0.12);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2001; /* Позволяет кликать по кнопке поверх логотипа */
+    }
+
+    .logo-btn:hover {
+      background: #fff;
+      border-color: var(--accent-dark-pink);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(216, 112, 147, 0.25);
+    }
+
+    .logo-btn:active {
+      transform: translateY(0);
+    }
+
+    .logo-btn img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
       font-weight: 700;
-      letter-spacing: 0.5px;
       color: var(--accent-dark-pink);
+      letter-spacing: 0.5px;
     }
 
     .clock-container {
@@ -146,7 +187,6 @@
       opacity: 0.8;
     }
 
-    /* Полноценная кнопка смены имени */
     .btn-change-name {
       background: #fbf0f3;
       color: var(--accent-dark-pink);
@@ -251,6 +291,40 @@
       background: #fff;
     }
 
+    /* Плавающая кнопка возврата к текущей дате */
+    .today-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 50px;
+      height: 50px;
+      background-color: var(--accent-dark-pink);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(216, 112, 147, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease, transform 0.2s ease, visibility 0.3s;
+      z-index: 900;
+    }
+
+    .today-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      background-color: #c45d80;
+    }
+
+    .today-btn.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Модальное окно записи */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -360,6 +434,44 @@
       font-style: italic;
     }
 
+    /* Полу-прозрачный оверлей с логотипом */
+    .logo-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(5px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .logo-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .logo-overlay-img {
+      max-width: 75vw;
+      max-height: 75vh;
+      object-fit: contain;
+      opacity: 0.85; /* Полупрозрачность логотипа */
+      filter: drop-shadow(0 10px 25px rgba(216, 112, 147, 0.3));
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-overlay-img:hover {
+      transform: scale(1.02);
+    }
+
     @media (max-width: 600px) {
       .top-bar, .user-bar {
         flex-direction: column;
@@ -379,8 +491,14 @@
 
 <div class="app-container">
   <div class="top-bar">
-    <!-- Однородное оформление логотипа -->
-    <div class="brand">Adel dance studio</div>
+    <!-- Левый блок с кнопкой-логотипом и названием -->
+    <div class="brand-header-group">
+      <button class="logo-btn" id="logo-button" title="Переключить показ логотипа">
+        <img src="ADS-ikon.png" alt="ADS Logo">
+      </button>
+      <span class="brand-title">Adel dance studio</span>
+    </div>
+    
     <div class="clock-container" id="clock">00:00:00 | 00.00.0000</div>
   </div>
 
@@ -391,7 +509,6 @@
     </div>
     <div id="user-logged" class="user-profile-info" style="display: none;">
       <span>Привет, <strong id="display-user-name"></strong>!</span>
-      <!-- Кнопка смены имени -->
       <button class="btn-change-name" onclick="logoutUser()">Сменить имя</button>
     </div>
   </div>
@@ -410,6 +527,12 @@
   </div>
 </div>
 
+<!-- Плавающая кнопка возврата к текущей дате -->
+<button id="today-btn" class="today-btn hidden" title="Вернуться к сегодняшнему дню">
+  <span id="today-btn-day"></span>
+</button>
+
+<!-- Модальное окно записи -->
 <div class="modal-overlay" id="booking-modal">
   <div class="modal-content">
     <span class="close-btn" id="close-modal">&times;</span>
@@ -417,6 +540,11 @@
     <p class="modal-subtitle" id="modal-date-subtitle">Выберите время и запишитесь:</p>
     <div class="time-slots" id="time-slots-container"></div>
   </div>
+</div>
+
+<!-- Полу-прозрачное всплывающее изображение логотипа -->
+<div class="logo-overlay" id="logo-overlay">
+  <img src="ADS-ikon.png" alt="ADS Logo Large" class="logo-overlay-img" id="logo-overlay-img" title="Кликните, чтобы закрыть">
 </div>
 
 <script>
@@ -434,7 +562,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Вывод часов
+  // Часы
   function updateClock() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
@@ -450,7 +578,7 @@
   setInterval(updateClock, 1000);
   updateClock();
 
-  // Работа с именем пользователя
+  // Имя пользователя
   let currentUser = localStorage.getItem('adel_user') || '';
 
   function initUser() {
@@ -490,8 +618,10 @@
 
   initUser();
 
-  // Логика календаря
+  // Календарь
   let currentDate = new Date();
+  const realToday = new Date();
+  
   let selectedFullDate = '';
   let isPastDate = false;
 
@@ -499,11 +629,28 @@
   const daysContainer = document.getElementById('days-container');
   const prevBtn = document.getElementById('prev-month');
   const nextBtn = document.getElementById('next-month');
+  const logoButton = document.getElementById('logo-button');
+  
+  const todayBtn = document.getElementById('today-btn');
+  const todayBtnDay = document.getElementById('today-btn-day');
+
+  todayBtnDay.textContent = realToday.getDate();
 
   const monthNames = [
     "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
   ];
+
+  function checkTodayButtonVisibility() {
+    if (
+      currentDate.getMonth() === realToday.getMonth() &&
+      currentDate.getFullYear() === realToday.getFullYear()
+    ) {
+      todayBtn.classList.add('hidden');
+    } else {
+      todayBtn.classList.remove('hidden');
+    }
+  }
 
   function renderCalendar() {
     const year = currentDate.getFullYear();
@@ -521,16 +668,15 @@
       daysContainer.appendChild(emptyCard);
     }
 
-    const today = new Date();
     for (let day = 1; day <= totalDays; day++) {
       const dayCard = document.createElement('div');
       dayCard.classList.add('day-card');
       dayCard.textContent = day;
 
       if (
-        day === today.getDate() &&
-        month === today.getMonth() &&
-        year === today.getFullYear()
+        day === realToday.getDate() &&
+        month === realToday.getMonth() &&
+        year === realToday.getFullYear()
       ) {
         dayCard.classList.add('today');
       }
@@ -538,6 +684,13 @@
       dayCard.addEventListener('click', () => openBookingModal(day, month, year));
       daysContainer.appendChild(dayCard);
     }
+
+    checkTodayButtonVisibility();
+  }
+
+  function resetToToday() {
+    currentDate = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
+    renderCalendar();
   }
 
   prevBtn.addEventListener('click', () => {
@@ -550,9 +703,29 @@
     renderCalendar();
   });
 
+  todayBtn.addEventListener('click', resetToToday);
+
+  // Переключение показа/скрытия логотипа по нажатию кнопки
+  const logoOverlay = document.getElementById('logo-overlay');
+
+  logoButton.addEventListener('click', () => {
+    logoOverlay.classList.toggle('active');
+  });
+
+  // Закрытие при клике по оверлею или по самому изображению
+  logoOverlay.addEventListener('click', () => {
+    logoOverlay.classList.remove('active');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && logoOverlay.classList.contains('active')) {
+      logoOverlay.classList.remove('active');
+    }
+  });
+
   renderCalendar();
 
-  // Окно записи и работа с Firebase
+  // Модальное окно записи через Firebase
   const modal = document.getElementById('booking-modal');
   const closeModal = document.getElementById('close-modal');
   const modalDateTitle = document.getElementById('modal-date-title');
@@ -567,23 +740,20 @@
     const formattedMonth = String(month + 1).padStart(2, '0');
     selectedFullDate = `${year}-${formattedMonth}-${formattedDay}`;
 
-    // Проверка прошедшей даты
     const selectedDateObj = new Date(year, month, day);
-    const todayObj = new Date();
-    todayObj.setHours(0, 0, 0, 0);
+    const todayZero = new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
 
-    isPastDate = selectedDateObj < todayObj;
+    isPastDate = selectedDateObj < todayZero;
 
     modalDateTitle.textContent = `Запись на ${formattedDay}.${formattedMonth}.${year}`;
     if (isPastDate) {
-      modalDateSubtitle.textContent = "Просмотр прошедшей даты (запись закрыта):";
+      modalDateSubtitle.textContent = "Просмотр архивной даты (запись закрыта):";
     } else {
       modalDateSubtitle.textContent = "Выберите время и запишитесь:";
     }
 
     modal.style.display = 'flex';
 
-    // Слушаем базу данных
     db.ref('bookings/' + selectedFullDate).on('value', (snapshot) => {
       currentDayBookings = snapshot.val() || {};
       renderTimeSlots();
@@ -598,7 +768,6 @@
       const participantsObj = currentDayBookings[timeKey] || {};
       const participantsEntries = Object.entries(participantsObj);
 
-      // Ищем, записан ли текущий пользователь
       const myRecordEntry = participantsEntries.find(([id, name]) => name === currentUser);
       const isMyBooking = !!myRecordEntry;
 
@@ -632,7 +801,6 @@
       slotHeader.appendChild(actionBtn);
       slotCard.appendChild(slotHeader);
 
-      // Список всех записавшихся
       const partContainer = document.createElement('div');
       partContainer.className = 'participants-list';
 
