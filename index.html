@@ -31,6 +31,7 @@
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -85,8 +86,14 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 8px rgba(216, 112, 147, 0.12);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 2001; /* Позволяет кликать по кнопке поверх логотипа */
+    }
+
+    .logo-btn.hidden-by-modal {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
 
     .logo-btn:hover {
@@ -197,6 +204,7 @@
       font-size: 0.85rem;
       font-weight: 600;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .btn-change-name:hover {
@@ -272,7 +280,7 @@
       transition: all 0.2s ease;
     }
 
-    .day-card:hover {
+    .day-card:not(.sunday):not(.empty):hover {
       background: var(--accent-pink);
       color: white;
       transform: translateY(-2px);
@@ -289,6 +297,20 @@
       border: 2px solid var(--accent-dark-pink);
       font-weight: 700;
       background: #fff;
+    }
+
+    /* Выключенное воскресенье */
+    .day-card.sunday {
+      background: #f7f7f7;
+      border-color: #eee;
+      color: #ccc;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .weekday-sunday {
+      color: #e74c3c;
+      opacity: 0.6;
     }
 
     /* Плавающая кнопка возврата к текущей дате */
@@ -472,17 +494,91 @@
       transform: scale(1.02);
     }
 
+    /* Адаптивные стили под мобильные телефоны */
     @media (max-width: 600px) {
-      .top-bar, .user-bar {
-        flex-direction: column;
-        align-items: flex-start;
+      body {
+        padding: 8px;
       }
+
+      .app-container {
+        border-radius: 12px;
+      }
+
+      .top-bar {
+        padding: 10px 12px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .brand-title {
+        font-size: 1rem;
+      }
+
+      .logo-btn {
+        width: 38px;
+        height: 38px;
+      }
+
+      .clock-container {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+      }
+
+      .user-bar {
+        padding: 10px 12px;
+      }
+
+      .calendar-header {
+        padding: 15px 12px 10px;
+      }
+
+      .month-display {
+        font-size: 1.2rem;
+      }
+
+      .nav-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+      }
+
+      .calendar-body {
+        padding: 0 10px 15px;
+      }
+
       .days-grid {
-        gap: 5px;
+        gap: 4px;
       }
+
       .day-card {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         border-radius: 8px;
+      }
+
+      .today-btn {
+        bottom: 15px;
+        right: 15px;
+        width: 44px;
+        height: 44px;
+        font-size: 1rem;
+      }
+
+      /* Трансформация модального окна на телефоне в нижний шторный блок */
+      .modal-overlay {
+        align-items: flex-end;
+      }
+
+      .modal-content {
+        width: 100%;
+        max-width: 100%;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        padding: 20px 15px;
+        max-height: 80vh;
       }
     }
   </style>
@@ -521,7 +617,7 @@
 
   <div class="calendar-body">
     <div class="weekdays-grid">
-      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div class="weekday-sunday">Вс</div>
     </div>
     <div class="days-grid" id="days-container"></div>
   </div>
@@ -673,6 +769,9 @@
       dayCard.classList.add('day-card');
       dayCard.textContent = day;
 
+      const currentDayDate = new Date(year, month, day);
+      const isSunday = currentDayDate.getDay() === 0;
+
       if (
         day === realToday.getDate() &&
         month === realToday.getMonth() &&
@@ -681,7 +780,13 @@
         dayCard.classList.add('today');
       }
 
-      dayCard.addEventListener('click', () => openBookingModal(day, month, year));
+      if (isSunday) {
+        dayCard.classList.add('sunday');
+        dayCard.title = "Воскресенье — выходной день";
+      } else {
+        dayCard.addEventListener('click', () => openBookingModal(day, month, year));
+      }
+
       daysContainer.appendChild(dayCard);
     }
 
@@ -736,6 +841,9 @@
   let currentDayBookings = {};
 
   function openBookingModal(day, month, year) {
+    // Скрываем логотип-кнопку при вызове окна записи
+    logoButton.classList.add('hidden-by-modal');
+
     const formattedDay = String(day).padStart(2, '0');
     const formattedMonth = String(month + 1).padStart(2, '0');
     selectedFullDate = `${year}-${formattedMonth}-${formattedDay}`;
@@ -758,6 +866,13 @@
       currentDayBookings = snapshot.val() || {};
       renderTimeSlots();
     });
+  }
+
+  function hideModal() {
+    modal.style.display = 'none';
+    // Возвращаем видимость кнопки логотипа
+    logoButton.classList.remove('hidden-by-modal');
+    if (selectedFullDate) db.ref('bookings/' + selectedFullDate).off();
   }
 
   function renderTimeSlots() {
@@ -865,15 +980,11 @@
     db.ref(`bookings/${selectedFullDate}/${timeKey}/${recordId}`).remove();
   }
 
-  closeModal.addEventListener('click', () => {
-    modal.style.display = 'none';
-    if (selectedFullDate) db.ref('bookings/' + selectedFullDate).off();
-  });
+  closeModal.addEventListener('click', hideModal);
 
   window.addEventListener('click', (e) => {
     if (e.target === modal) {
-      modal.style.display = 'none';
-      if (selectedFullDate) db.ref('bookings/' + selectedFullDate).off();
+      hideModal();
     }
   });
 </script>
