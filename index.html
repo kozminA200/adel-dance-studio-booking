@@ -24,6 +24,7 @@
       --danger-color: #e74c3c;
       --danger-hover: #c0392b;
       --disabled-color: #bdc3c7;
+      --top-bar-bg: #fbf0f3;
     }
 
     * {
@@ -38,7 +39,7 @@
     html, body {
       width: 100%;
       height: 100%;
-      height: 100dvh; /* Учитывает динамические панели браузеров на iOS/Android */
+      height: 100dvh;
       overflow: hidden;
       touch-action: manipulation;
     }
@@ -71,21 +72,19 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 25px;
-      background: #fbf0f3;
+      background: var(--top-bar-bg);
       border-bottom: 1px solid var(--border-color);
       flex-wrap: wrap;
       gap: 15px;
       flex-shrink: 0;
     }
 
-    /* Левый блок: Кнопка с логотипом + Текстовое название */
     .brand-header-group {
       display: flex;
       align-items: center;
       gap: 14px;
     }
 
-    /* Кнопка с логотипом слева */
     .logo-btn {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -99,7 +98,7 @@
       justify-content: center;
       box-shadow: 0 2px 8px rgba(216, 112, 147, 0.12);
       transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 2001; /* Позволяет кликать по кнопке поверх логотипа */
+      z-index: 2001;
     }
 
     .logo-btn.hidden-by-modal {
@@ -208,7 +207,7 @@
     }
 
     .btn-change-name {
-      background: #fbf0f3;
+      background: var(--top-bar-bg);
       color: var(--accent-dark-pink);
       border: 1px solid var(--border-color);
       padding: 6px 14px;
@@ -318,6 +317,20 @@
       background: #fff;
     }
 
+    /* Оформление прошедших дней */
+    .day-card.past {
+      background: #f5ecef;
+      color: #a89a9e;
+      opacity: 0.65;
+    }
+
+    .day-card.past:hover {
+      background: #edd8de;
+      color: var(--text-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(220, 160, 175, 0.2);
+    }
+
     /* Выключенное воскресенье */
     .day-card.sunday {
       background: #f7f7f7;
@@ -332,10 +345,15 @@
       opacity: 0.6;
     }
 
+    /* Нижняя декоративная плашка для мобильных */
+    .bottom-spacer {
+      display: none;
+    }
+
     /* Плавающая кнопка возврата к текущей дате */
     .today-btn {
       position: fixed;
-      bottom: 25px;
+      bottom: 40px;
       right: 25px;
       width: 50px;
       height: 50px;
@@ -504,7 +522,7 @@
       max-width: 75vw;
       max-height: 75vh;
       object-fit: contain;
-      opacity: 0.85; /* Полупрозрачность логотипа */
+      opacity: 0.85;
       filter: drop-shadow(0 10px 25px rgba(216, 112, 147, 0.3));
       cursor: pointer;
       user-select: none;
@@ -568,6 +586,15 @@
 
       .calendar-body {
         padding: 0 8px 10px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      /* Нижнее пустое пространство в цвет шапки */
+      .bottom-spacer {
+        display: block;
+        height: 32px;
+        background: var(--top-bar-bg);
+        flex-shrink: 0;
       }
 
       .days-grid {
@@ -580,14 +607,13 @@
       }
 
       .today-btn {
-        bottom: 12px;
+        bottom: 42px;
         right: 12px;
         width: 42px;
         height: 42px;
         font-size: 0.95rem;
       }
 
-      /* Окно записи строго по центру экрана */
       .modal-overlay {
         align-items: center;
         justify-content: center;
@@ -607,7 +633,6 @@
 
 <div class="app-container">
   <div class="top-bar">
-    <!-- Левый блок с кнопкой-логотипом и названием -->
     <div class="brand-header-group">
       <button class="logo-btn" id="logo-button" title="Переключить показ логотипа">
         <img src="ADS-ikon.png" alt="ADS Logo">
@@ -641,14 +666,15 @@
     </div>
     <div class="days-grid" id="days-container"></div>
   </div>
+
+  <!-- Пустая нижняя плашка под календарем для смартфона -->
+  <div class="bottom-spacer"></div>
 </div>
 
-<!-- Плавающая кнопка возврата к текущей дате -->
 <button id="today-btn" class="today-btn hidden" title="Вернуться к сегодняшнему дню">
   <span id="today-btn-day"></span>
 </button>
 
-<!-- Модальное окно записи -->
 <div class="modal-overlay" id="booking-modal">
   <div class="modal-content">
     <span class="close-btn" id="close-modal">&times;</span>
@@ -658,13 +684,11 @@
   </div>
 </div>
 
-<!-- Полу-прозрачное всплывающее изображение логотипа -->
 <div class="logo-overlay" id="logo-overlay">
   <img src="ADS-ikon.png" alt="ADS Logo Large" class="logo-overlay-img" id="logo-overlay-img" title="Кликните, чтобы закрыть">
 </div>
 
 <script>
-  // Конфигурация Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBVDvOEPjiVOqqMQoQmyh4bPdNCLlS1Ups",
     authDomain: "kozmin-a1.firebaseapp.com",
@@ -678,7 +702,6 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Часы
   function updateClock() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
@@ -694,7 +717,6 @@
   setInterval(updateClock, 1000);
   updateClock();
 
-  // Имя пользователя
   let currentUser = localStorage.getItem('adel_user') || '';
 
   function initUser() {
@@ -734,11 +756,12 @@
 
   initUser();
 
-  // Календарь
   let currentDate = new Date();
   const realToday = new Date();
+  const todayZero = new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
   
   let selectedFullDate = '';
+  let selectedDateObj = null;
   let isPastDate = false;
 
   const monthDisplay = document.getElementById('month-display');
@@ -791,6 +814,7 @@
 
       const currentDayDate = new Date(year, month, day);
       const isSunday = currentDayDate.getDay() === 0;
+      const isPast = currentDayDate < todayZero;
 
       if (
         day === realToday.getDate() &&
@@ -798,6 +822,8 @@
         year === realToday.getFullYear()
       ) {
         dayCard.classList.add('today');
+      } else if (isPast && !isSunday) {
+        dayCard.classList.add('past');
       }
 
       if (isSunday) {
@@ -830,14 +856,12 @@
 
   todayBtn.addEventListener('click', resetToToday);
 
-  // Переключение показа/скрытия логотипа по нажатию кнопки
   const logoOverlay = document.getElementById('logo-overlay');
 
   logoButton.addEventListener('click', () => {
     logoOverlay.classList.toggle('active');
   });
 
-  // Закрытие при клике по оверлею или по самому изображению
   logoOverlay.addEventListener('click', () => {
     logoOverlay.classList.remove('active');
   });
@@ -850,27 +874,30 @@
 
   renderCalendar();
 
-  // Модальное окно записи через Firebase
   const modal = document.getElementById('booking-modal');
   const closeModal = document.getElementById('close-modal');
   const modalDateTitle = document.getElementById('modal-date-title');
   const modalDateSubtitle = document.getElementById('modal-date-subtitle');
   const timeSlotsContainer = document.getElementById('time-slots-container');
 
-  const availableTimes = ["15:00", "16:00", "17:00", "18:00"];
   let currentDayBookings = {};
 
+  // Функция получения временных слотов (для субботы только 10:00 и 11:00)
+  function getAvailableTimes(dateObj) {
+    if (dateObj && dateObj.getDay() === 6) {
+      return ["10:00", "11:00"];
+    }
+    return ["15:00", "16:00", "17:00", "18:00"];
+  }
+
   function openBookingModal(day, month, year) {
-    // Скрываем логотип-кнопку при вызове окна записи
     logoButton.classList.add('hidden-by-modal');
 
     const formattedDay = String(day).padStart(2, '0');
     const formattedMonth = String(month + 1).padStart(2, '0');
     selectedFullDate = `${year}-${formattedMonth}-${formattedDay}`;
 
-    const selectedDateObj = new Date(year, month, day);
-    const todayZero = new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
-
+    selectedDateObj = new Date(year, month, day);
     isPastDate = selectedDateObj < todayZero;
 
     modalDateTitle.textContent = `Запись на ${formattedDay}.${formattedMonth}.${year}`;
@@ -890,15 +917,15 @@
 
   function hideModal() {
     modal.style.display = 'none';
-    // Возвращаем видимость кнопки логотипа
     logoButton.classList.remove('hidden-by-modal');
     if (selectedFullDate) db.ref('bookings/' + selectedFullDate).off();
   }
 
   function renderTimeSlots() {
     timeSlotsContainer.innerHTML = '';
+    const timesToDisplay = getAvailableTimes(selectedDateObj);
 
-    availableTimes.forEach(time => {
+    timesToDisplay.forEach(time => {
       const timeKey = time.replace(':', '_');
       const participantsObj = currentDayBookings[timeKey] || {};
       const participantsEntries = Object.entries(participantsObj);
