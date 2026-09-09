@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adel Dance Studio — Запись на занятия</title>
+  
+  <!-- Подключаем библиотеки Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #fdf6f8;
+      --card-bg: #ffffff;
+      --accent-pink: #f4c2c2;
+      --accent-pink-hover: #eaa9a9;
+      --accent-dark-pink: #d87093;
+      --text-dark: #2c2c2c;
+      --text-muted: #7d7d7d;
+      --border-color: #f0dbe0;
+      --shadow: 0 10px 30px rgba(220, 160, 175, 0.15);
+      --radius: 16px;
+      --danger-color: #e74c3c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 30px;
+      background: #fbf0f3;
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .brand {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-dark);
+    }
+
+    .brand span {
+      color: var(--accent-dark-pink);
+      font-weight: 400;
+      font-style: italic;
+    }
+
+    .clock-container {
+      font-family: monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: #ffffff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      color: var(--text-dark);
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 30px;
+      background: #fff;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+
+    .user-profile-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .user-input {
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .btn-small {
+      padding: 6px 14px;
+      background: var(--accent-dark-pink);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+
+    .btn-small:hover {
+      opacity: 0.9;
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 0.85rem;
+      margin-left: 10px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 25px 30px 15px;
+    }
+
+    .month-display {
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .nav-btn {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--text-dark);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-btn:hover {
+      background: var(--accent-pink);
+      color: white;
+    }
+
+    .calendar-body {
+      padding: 0 30px 30px;
+    }
+
+    .weekdays-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .day-card {
+      aspect-ratio: 1;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .day-card:hover {
+      background: var(--accent-pink);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(244, 194, 194, 0.5);
+    }
+
+    .day-card.empty {
+      background: transparent;
+      border: none;
+      cursor: default;
+    }
+
+    .day-card.today {
+      border: 2px solid var(--accent-dark-pink);
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+    }
+
+    .modal-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .time-slots {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .slot-card {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      background: var(--bg-color);
+    }
+
+    .slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .slot-time {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .participants-list {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    .participants-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .participant-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      border: 1px solid #f2e3e6;
+    }
+
+    .btn-cancel-mini {
+      background: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .btn-cancel-mini:hover {
+      opacity: 0.85;
+    }
+
+    .no-participants {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+      .top-bar, .user-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .days-grid {
+        gap: 5px;
+      }
+      .day-card {
+        font-size: 0.9rem;
+        border-radius: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="top-bar">
+    <div class="brand">Adel <span>dance studio</span></div>
+    <div class="clock-container" id="clock">00:00:00 | 00.00.0000</div>
+  </div>
+
+  <div class="user-bar">
+    <div id="user-anonymous" class="user-input-group">
+      <input type="text" id="user-name-input" class="user-input" placeholder="Ваше имя">
+      <button class="btn-small" onclick="saveUser()">Сохранить</button>
+    </div>
+    <div id="user-logged" class="user-profile-info" style="display: none;">
+      <span>Привет, <strong id="display-user-name"></strong>!</span>
+      <button class="btn-link" onclick="logoutUser()">Сменить имя</button>
+    </div>
+  </div>
+
+  <div class="calendar-header">
+    <button class="nav-btn" id="prev-month">‹</button>
+    <div class="month-display" id="month-display">Месяц Год</div>
+    <button class="nav-btn" id="next-month">›</button>
+  </div>
+
+  <div class="calendar-body">
+    <div class="weekdays-grid">
+      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+    </div>
+    <div class="days-grid" id="days-container"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="booking-modal">
+  <div class="modal-content">
+    <span class="close-btn" id="close-modal">&times;</span>
+    <h3 class="modal-title" id="modal-date-title">Запись на дату</h3>
+    <p class="modal-subtitle">Выберите время и запишитесь:</p>
+    <div class="time-slots" id="time-slots-container"></div>
+  </div>
+</div>
+
+<script>
+// Обновленная конфигурация Firebase для нового проекта (kozmin-a1)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBVDvOEPjiVOqqMQoQmyh4bPdNCLlS1Ups",
+    authDomain: "kozmin-a1.firebaseapp.com",
+    databaseURL: "https://kozmin-a1-default-rtdb.europe-west1.firebasedatabase.app/",
+    projectId: "kozmin-a1",
+    storageBucket: "kozmin-a1.firebasestorage.app",
+    messagingSenderId: "875753095435",
+    appId: "1:875753095435:web:9792b0565bc2a34ebae20e"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Часы
+  function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+
+    document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds} | ${day}.${month}.${year}`;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Имя пользователя
+  let currentUser = localStorage.getItem('adel_user') || '';
+
+  function initUser() {
+    const anonBlock = document.getElementById('user-anonymous');
+    const loggedBlock = document.getElementById('user-logged');
+    const nameDisplay = document.getElementById('display-user-name');
+
+    if (currentUser) {
+      anonBlock.style.display = 'none';
+      loggedBlock.style.display = 'flex';
+      nameDisplay.textContent = currentUser;
+    } else {
+      anonBlock.style.display = 'flex';
+      loggedBlock.style.display = 'none';
+    }
+  }
+
+  function saveUser() {
+    const input = document.getElementById('user-name-input');
+    const val = input.value.trim();
+    if (!val) {
+      alert('Пожалуйста, введите ваше имя!');
+      return;
+    }
+    currentUser = val;
+    localStorage.setItem('adel_user', currentUser);
+    initUser();
+    if (selectedFullDate) renderTimeSlots();
+  }
+
+  function logoutUser() {
+    localStorage.removeItem('adel_user');
+    currentUser = '';
+    initUser();
+    if (selectedFullDate) renderTimeSlots();
+  }
+
+  initUser();
+
+  // Календарь
+  let currentDate = new Date();
+  let selectedFullDate = '';
+
+  const monthDisplay = document.getElementById('month-display');
+  const daysContainer = document.getElementById('days-container');
+  const prevBtn = document.getElementById('prev-month');
+  const nextBtn = document.getElementById('next-month');
+
+  const monthNames = [
+    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+  ];
+
+  function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    monthDisplay.textContent = `${monthNames[month]} ${year}`;
+    daysContainer.innerHTML = '';
+
+    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDayIndex; i++) {
+      const emptyCard = document.createElement('div');
+      emptyCard.classList.add('day-card', 'empty');
+      daysContainer.appendChild(emptyCard);
+    }
+
+    const today = new Date();
+    for (let day = 1; day <= totalDays; day++) {
+      const dayCard = document.createElement('div');
+      dayCard.classList.add('day-card');
+      dayCard.textContent = day;
+
+      if (
+        day === today.getDate() &&
+        month === today.getMonth() &&
+        year === today.getFullYear()
+      ) {
+        dayCard.classList.add('today');
+      }
+
+      dayCard.addEventListener('click', () => openBookingModal(day, month, year));
+      daysContainer.appendChild(dayCard);
+    }
+  }
+
+  prevBtn.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  renderCalendar();
+
+  // Синхронизация записей
+  const modal = document.getElementById('booking-modal');
+  const closeModal = document.getElementById('close-modal');
+  const modalDateTitle = document.getElementById('modal-date-title');
+  const timeSlotsContainer = document.getElementById('time-slots-container');
+
+  const availableTimes = ["15:00", "16:00", "17:00", "18:00"];
+  let currentDayBookings = {};
+
+  function openBookingModal(day, month, year) {
+    const formattedDay = String(day).padStart(2, '0');
+    const formattedMonth = String(month + 1).padStart(2, '0');
+    selectedFullDate = `${year}-${formattedMonth}-${formattedDay}`;
+
+    modalDateTitle.textContent = `Запись на ${formattedDay}.${formattedMonth}.${year}`;
+    modal.style.display = 'flex';
+
+    db.ref('bookings/' + selectedFullDate).on('value', (snapshot) => {
+      currentDayBookings = snapshot.val() || {};
+      renderTimeSlots();
+    });
+  }
+
+  function renderTimeSlots() {
+    timeSlotsContainer.innerHTML = '';
+
+    availableTimes.forEach(time => {
+      const timeKey = time.replace(':', '_');
+      const participantsObj = currentDayBookings[timeKey] || {};
+      const participants = Object.values(participantsObj);
+
+      const slotCard = document.createElement('div');
+      slotCard.className = 'slot-card';
+
+      const slotHeader = document.createElement('div');
+      slotHeader.className = 'slot-header';
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'slot-time';
+      timeSpan.textContent = time;
+
+      const bookBtn = document.createElement('button');
+      bookBtn.className = 'btn-small';
+      bookBtn.textContent = 'Записаться';
+      bookBtn.onclick = () => bookSlot(timeKey);
+
+      slotHeader.appendChild(timeSpan);
+      slotHeader.appendChild(bookBtn);
+      slotCard.appendChild(slotHeader);
+
+      const partContainer = document.createElement('div');
+      partContainer.className = 'participants-list';
+
+      const partTitle = document.createElement('div');
+      partTitle.className = 'participants-title';
+      partTitle.textContent = `Записались (${participants.length}):`;
+      partContainer.appendChild(partTitle);
+
+      if (participants.length === 0) {
+        const noPart = document.createElement('div');
+        noPart.className = 'no-participants';
+        noPart.textContent = 'Пока никто не записался';
+        partContainer.appendChild(noPart);
+      } else {
+        Object.entries(participantsObj).forEach(([id, name]) => {
+          const item = document.createElement('div');
+          item.className = 'participant-item';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = name;
+          item.appendChild(nameSpan);
+
+          if (name === currentUser) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn-cancel-mini';
+            cancelBtn.textContent = 'Отменить';
+            cancelBtn.onclick = () => cancelSlot(timeKey, id);
+            item.appendChild(cancelBtn);
+          }
+
+          partContainer.appendChild(item);
+        });
+      }
+
+      slotCard.appendChild(partContainer);
+      timeSlotsContainer.appendChild(slotCard);
+    });
+  }
+
+  function bookSlot(timeKey) {
+    if (!currentUser) {
+      alert('Пожалуйста, введите ваше имя вверху страницы перед записью!');
+      return;
+    }
+
+    const participantsObj = currentDayBookings[timeKey] || {};
+    const participants = Object.values(participantsObj);
+
+    if (participants.includes(currentUser)) {
+      alert('Вы уже записаны на это время!');
+      return;
+    }
+
+    db.ref(`bookings/${selectedFullDate}/${timeKey}`).push(currentUser);
+  }
+
+  function cancelSlot(timeKey, recordId) {
+    db.ref(`bookings/${selectedFullDate}/${timeKey}/${recordId}`).remove();
+  }
+
+  closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+    db.ref('bookings/' + selectedFullDate).off();
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+      db.ref('bookings/' + selectedFullDate).off();
+    }
+  });
+</script>
+
+</body>
+</html>
