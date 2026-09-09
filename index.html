@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Adel dance studio — Запись на занятия</title>
+  <title>Adel dance studio — Запис на занятия</title>
   
   <!-- Подключаем библиотеки Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -317,7 +317,6 @@
       background: #fff;
     }
 
-    /* Оформление прошедших дней */
     .day-card.past {
       background: #f5ecef;
       color: #a89a9e;
@@ -331,7 +330,6 @@
       box-shadow: 0 2px 8px rgba(220, 160, 175, 0.2);
     }
 
-    /* Выключенное воскресенье */
     .day-card.sunday {
       background: #f7f7f7;
       border-color: #eee;
@@ -345,12 +343,10 @@
       opacity: 0.6;
     }
 
-    /* Нижняя декоративная плашка для мобильных */
     .bottom-spacer {
       display: none;
     }
 
-    /* Плавающая кнопка возврата к текущей дате */
     .today-btn {
       position: fixed;
       bottom: 40px;
@@ -383,7 +379,6 @@
       pointer-events: none;
     }
 
-    /* Модальное окно записи */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -494,7 +489,6 @@
       font-style: italic;
     }
 
-    /* Полу-прозрачный оверлей с логотипом */
     .logo-overlay {
       position: fixed;
       top: 0;
@@ -533,7 +527,7 @@
       transform: scale(1.02);
     }
 
-    /* Адаптивные стили под мобильные телефоны */
+    /* Адаптив під смартфони */
     @media (max-width: 600px) {
       body {
         padding: 5px;
@@ -584,17 +578,18 @@
         font-size: 0.9rem;
       }
 
+      /* Межа точно під останнім рядком дат */
       .calendar-body {
-        padding: 0 8px 10px;
+        padding: 0 8px 8px;
+        flex: 0 0 auto;
         border-bottom: 1px solid var(--border-color);
       }
 
-      /* Нижнее пустое пространство в цвет шапки */
+      /* Нижнє порожнє місце під межею календаря */
       .bottom-spacer {
         display: block;
-        height: 32px;
+        flex: 1;
         background: var(--top-bar-bg);
-        flex-shrink: 0;
       }
 
       .days-grid {
@@ -634,7 +629,7 @@
 <div class="app-container">
   <div class="top-bar">
     <div class="brand-header-group">
-      <button class="logo-btn" id="logo-button" title="Переключить показ логотипа">
+      <button class="logo-btn" id="logo-button" title="Переключити показ логотипу">
         <img src="ADS-ikon.png" alt="ADS Logo">
       </button>
       <span class="brand-title">Adel dance studio</span>
@@ -645,47 +640,46 @@
 
   <div class="user-bar">
     <div id="user-anonymous" class="user-input-group">
-      <input type="text" id="user-name-input" class="user-input" placeholder="Введите ваше имя">
-      <button class="btn-small" onclick="saveUser()">Сохранить</button>
+      <input type="text" id="user-name-input" class="user-input" placeholder="Введіть ваше ім'я">
+      <button class="btn-small" onclick="saveUser()">Зберегти</button>
     </div>
     <div id="user-logged" class="user-profile-info" style="display: none;">
-      <span>Привет, <strong id="display-user-name"></strong>!</span>
-      <button class="btn-change-name" onclick="logoutUser()">Сменить имя</button>
+      <span>Вітаю, <strong id="display-user-name"></strong>!</span>
+      <button class="btn-change-name" onclick="logoutUser()">Змінити ім'я</button>
     </div>
   </div>
 
   <div class="calendar-header">
     <button class="nav-btn" id="prev-month">‹</button>
-    <div class="month-display" id="month-display">Месяц Год</div>
+    <div class="month-display" id="month-display">Місяць Рік</div>
     <button class="nav-btn" id="next-month">›</button>
   </div>
 
   <div class="calendar-body">
     <div class="weekdays-grid">
-      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div class="weekday-sunday">Вс</div>
+      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div class="weekday-sunday">Нд</div>
     </div>
     <div class="days-grid" id="days-container"></div>
   </div>
 
-  <!-- Пустая нижняя плашка под календарем для смартфона -->
   <div class="bottom-spacer"></div>
 </div>
 
-<button id="today-btn" class="today-btn hidden" title="Вернуться к сегодняшнему дню">
+<button id="today-btn" class="today-btn hidden" title="Повернутися до сьогоднішнього дня">
   <span id="today-btn-day"></span>
 </button>
 
 <div class="modal-overlay" id="booking-modal">
   <div class="modal-content">
     <span class="close-btn" id="close-modal">&times;</span>
-    <h3 class="modal-title" id="modal-date-title">Запись на дату</h3>
-    <p class="modal-subtitle" id="modal-date-subtitle">Выберите время и запишитесь:</p>
+    <h3 class="modal-title" id="modal-date-title">Запис на дату</h3>
+    <p class="modal-subtitle" id="modal-date-subtitle">Оберіть час та запишіться:</p>
     <div class="time-slots" id="time-slots-container"></div>
   </div>
 </div>
 
 <div class="logo-overlay" id="logo-overlay">
-  <img src="ADS-ikon.png" alt="ADS Logo Large" class="logo-overlay-img" id="logo-overlay-img" title="Кликните, чтобы закрыть">
+  <img src="ADS-ikon.png" alt="ADS Logo Large" class="logo-overlay-img" id="logo-overlay-img" title="Клікніть, щоб закрити">
 </div>
 
 <script>
@@ -738,7 +732,7 @@
     const input = document.getElementById('user-name-input');
     const val = input.value.trim();
     if (!val) {
-      alert('Пожалуйста, введите ваше имя!');
+      alert('Будь ласка, введіть ваше ім\'я!');
       return;
     }
     currentUser = val;
@@ -776,8 +770,8 @@
   todayBtnDay.textContent = realToday.getDate();
 
   const monthNames = [
-    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+    "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
+    "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
   ];
 
   function checkTodayButtonVisibility() {
@@ -828,7 +822,7 @@
 
       if (isSunday) {
         dayCard.classList.add('sunday');
-        dayCard.title = "Воскресенье — выходной день";
+        dayCard.title = "Неділя — вихідний день";
       } else {
         dayCard.addEventListener('click', () => openBookingModal(day, month, year));
       }
@@ -882,7 +876,6 @@
 
   let currentDayBookings = {};
 
-  // Функция получения временных слотов (для субботы только 10:00 и 11:00)
   function getAvailableTimes(dateObj) {
     if (dateObj && dateObj.getDay() === 6) {
       return ["10:00", "11:00"];
@@ -900,11 +893,11 @@
     selectedDateObj = new Date(year, month, day);
     isPastDate = selectedDateObj < todayZero;
 
-    modalDateTitle.textContent = `Запись на ${formattedDay}.${formattedMonth}.${year}`;
+    modalDateTitle.textContent = `Запис на ${formattedDay}.${formattedMonth}.${year}`;
     if (isPastDate) {
-      modalDateSubtitle.textContent = "Просмотр архивной даты (запись закрыта):";
+      modalDateSubtitle.textContent = "Перегляд архівної дати (запис закрито):";
     } else {
-      modalDateSubtitle.textContent = "Выберите время и запишитесь:";
+      modalDateSubtitle.textContent = "Оберіть час та запишіться:";
     }
 
     modal.style.display = 'flex';
@@ -947,15 +940,15 @@
 
       if (isPastDate) {
         actionBtn.className = 'btn-small btn-disabled';
-        actionBtn.textContent = 'Запись закрыта';
+        actionBtn.textContent = 'Запис закрито';
         actionBtn.disabled = true;
       } else if (isMyBooking) {
         actionBtn.className = 'btn-small btn-cancel';
-        actionBtn.textContent = 'Отменить запись';
+        actionBtn.textContent = 'Скасувати запис';
         actionBtn.onclick = () => cancelSlot(timeKey, myRecordEntry[0]);
       } else {
         actionBtn.className = 'btn-small';
-        actionBtn.textContent = 'Записаться';
+        actionBtn.textContent = 'Записатися';
         actionBtn.onclick = () => bookSlot(timeKey);
       }
 
@@ -968,13 +961,13 @@
 
       const partTitle = document.createElement('div');
       partTitle.className = 'participants-title';
-      partTitle.textContent = `Записались (${participantsEntries.length}):`;
+      partTitle.textContent = `Записалися (${participantsEntries.length}):`;
       partContainer.appendChild(partTitle);
 
       if (participantsEntries.length === 0) {
         const noPart = document.createElement('div');
         noPart.className = 'no-participants';
-        noPart.textContent = 'Пока никто не записался';
+        noPart.textContent = 'Поки ніхто не записався';
         partContainer.appendChild(noPart);
       } else {
         participantsEntries.forEach(([id, name]) => {
@@ -985,7 +978,7 @@
           }
 
           const nameSpan = document.createElement('span');
-          nameSpan.textContent = name + (name === currentUser ? ' (Вы)' : '');
+          nameSpan.textContent = name + (name === currentUser ? ' (Ви)' : '');
           item.appendChild(nameSpan);
 
           partContainer.appendChild(item);
@@ -999,12 +992,12 @@
 
   function bookSlot(timeKey) {
     if (!currentUser) {
-      alert('Пожалуйста, введите ваше имя вверху страницы перед записью!');
+      alert('Будь ласка, введіть ваше ім\'я вгорі сторінки перед записом!');
       return;
     }
 
     if (isPastDate) {
-      alert('Нельзя записаться на прошедшую дату!');
+      alert('Неможливо записатися на минулу дату!');
       return;
     }
 
@@ -1012,7 +1005,7 @@
     const participants = Object.values(participantsObj);
 
     if (participants.includes(currentUser)) {
-      alert('Вы уже записаны на это время!');
+      alert('Ви вже записані на цей час!');
       return;
     }
 
@@ -1021,7 +1014,7 @@
 
   function cancelSlot(timeKey, recordId) {
     if (isPastDate) {
-      alert('Нельзя отменить запись на прошедшую дату!');
+      alert('Неможливо скасувати запис на минулу дату!');
       return;
     }
     db.ref(`bookings/${selectedFullDate}/${timeKey}/${recordId}`).remove();
