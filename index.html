@@ -35,7 +35,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Блокируем скролл всего экрана */
     html, body {
       width: 100%;
       height: 100%;
@@ -55,7 +54,7 @@
 
     .app-container {
       width: 100%;
-      max-width: 900px;
+      max-width: 1100px;
       max-height: 100%;
       background: var(--card-bg);
       border-radius: var(--radius);
@@ -224,6 +223,73 @@
       color: white;
     }
 
+    /* Главный макет: Календарь + Мои записи (для ПК) */
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .calendar-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .my-bookings-section {
+      width: 320px;
+      border-left: 1px solid var(--border-color);
+      background: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .my-bookings-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-dark-pink);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .booking-card {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .booking-info-date {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+    }
+
+    .booking-info-time {
+      font-size: 0.85rem;
+      color: var(--accent-dark-pink);
+      font-weight: 600;
+    }
+
+    .no-bookings-msg {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      margin-top: 20px;
+    }
+
     .calendar-header {
       display: flex;
       justify-content: space-between;
@@ -341,10 +407,6 @@
     .weekday-sunday {
       color: #e74c3c;
       opacity: 0.6;
-    }
-
-    .bottom-spacer {
-      display: none;
     }
 
     .today-btn {
@@ -527,8 +589,8 @@
       transform: scale(1.02);
     }
 
-    /* Адаптив під смартфони */
-    @media (max-width: 600px) {
+    /* Адаптив под смартфоны */
+    @media (max-width: 768px) {
       body {
         padding: 5px;
       }
@@ -564,6 +626,15 @@
         padding: 8px 10px;
       }
 
+      .main-layout {
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      .calendar-section {
+        flex: 0 0 auto;
+      }
+
       .calendar-header {
         padding: 10px 10px 6px;
       }
@@ -578,16 +649,17 @@
         font-size: 0.9rem;
       }
 
-      /* Межа точно під останнім рядком дат */
       .calendar-body {
         padding: 0 8px 8px;
         flex: 0 0 auto;
         border-bottom: 1px solid var(--border-color);
       }
 
-      /* Нижнє порожнє місце під межею календаря */
-      .bottom-spacer {
-        display: block;
+      /* Блок "Мои записи" под календарем на смартфоне */
+      .my-bookings-section {
+        width: 100%;
+        border-left: none;
+        padding: 12px 10px;
         flex: 1;
         background: var(--top-bar-bg);
       }
@@ -649,20 +721,32 @@
     </div>
   </div>
 
-  <div class="calendar-header">
-    <button class="nav-btn" id="prev-month">‹</button>
-    <div class="month-display" id="month-display">Місяць Рік</div>
-    <button class="nav-btn" id="next-month">›</button>
-  </div>
+  <div class="main-layout">
+    <div class="calendar-section">
+      <div class="calendar-header">
+        <button class="nav-btn" id="prev-month">‹</button>
+        <div class="month-display" id="month-display">Місяць Рік</div>
+        <button class="nav-btn" id="next-month">›</button>
+      </div>
 
-  <div class="calendar-body">
-    <div class="weekdays-grid">
-      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div class="weekday-sunday">Нд</div>
+      <div class="calendar-body">
+        <div class="weekdays-grid">
+          <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div class="weekday-sunday">Нд</div>
+        </div>
+        <div class="days-grid" id="days-container"></div>
+      </div>
     </div>
-    <div class="days-grid" id="days-container"></div>
-  </div>
 
-  <div class="bottom-spacer"></div>
+    <!-- Раздел с персональными записями -->
+    <div class="my-bookings-section">
+      <div class="my-bookings-title">
+        📌 Ваші записи
+      </div>
+      <div id="my-bookings-container">
+        <div class="no-bookings-msg">Завантаження...</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <button id="today-btn" class="today-btn hidden" title="Повернутися до сьогоднішнього дня">
@@ -726,6 +810,7 @@
       anonBlock.style.display = 'flex';
       loggedBlock.style.display = 'none';
     }
+    listenToAllBookings();
   }
 
   function saveUser() {
@@ -747,8 +832,6 @@
     initUser();
     if (selectedFullDate) renderTimeSlots();
   }
-
-  initUser();
 
   let currentDate = new Date();
   const realToday = new Date();
@@ -868,6 +951,81 @@
 
   renderCalendar();
 
+  /* Логика для блока "Ваші записи" */
+  function listenToAllBookings() {
+    const container = document.getElementById('my-bookings-container');
+    
+    if (!currentUser) {
+      container.innerHTML = '<div class="no-bookings-msg">Увійдіть або введіть ім\'я, щоб побачити свої записи</div>';
+      return;
+    }
+
+    db.ref('bookings').on('value', (snapshot) => {
+      const allBookings = snapshot.val() || {};
+      const userBookings = [];
+
+      Object.entries(allBookings).forEach(([dateStr, timeSlots]) => {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const bookingDateObj = new Date(year, month - 1, day);
+
+        // Проверяем: если день уже прошел (до 00:00 сегодняшнего дня), не отображаем его
+        if (bookingDateObj >= todayZero) {
+          Object.entries(timeSlots).forEach(([timeKey, participants]) => {
+            if (participants) {
+              Object.entries(participants).forEach(([id, name]) => {
+                if (name === currentUser) {
+                  userBookings.push({
+                    dateStr,
+                    formattedDate: `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`,
+                    time: timeKey.replace('_', ':'),
+                    timeKey,
+                    id,
+                    rawDate: bookingDateObj
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+
+      // Сортируем записи по возрастанию даты
+      userBookings.sort((a, b) => a.rawDate - b.rawDate || a.time.localeCompare(b.time));
+
+      if (userBookings.length === 0) {
+        container.innerHTML = '<div class="no-bookings-msg">У вас немає активних записів</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      userBookings.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+        card.innerHTML = `
+          <div>
+            <div class="booking-info-date">${item.formattedDate}</div>
+            <div class="booking-info-time">⏰ ${item.time}</div>
+          </div>
+        `;
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-small btn-cancel';
+        cancelBtn.style.padding = '4px 8px';
+        cancelBtn.style.fontSize = '0.75rem';
+        cancelBtn.textContent = 'Скасувати';
+        cancelBtn.onclick = () => {
+          db.ref(`bookings/${item.dateStr}/${item.timeKey}/${item.id}`).remove();
+        };
+
+        card.appendChild(cancelBtn);
+        container.appendChild(card);
+      });
+    });
+  }
+
+  initUser();
+
+  /* Модальное окно */
   const modal = document.getElementById('booking-modal');
   const closeModal = document.getElementById('close-modal');
   const modalDateTitle = document.getElementById('modal-date-title');
