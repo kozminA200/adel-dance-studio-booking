@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Adel dance studio — Запись на занятия</title>
   
   <!-- Подключаем библиотеки Firebase -->
@@ -34,25 +34,36 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* Блокируем скролл всего экрана */
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh; /* Учитывает динамические панели браузеров на iOS/Android */
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
     body {
       background-color: var(--bg-color);
       color: var(--text-dark);
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
       padding: 20px;
     }
 
     .app-container {
       width: 100%;
       max-width: 900px;
+      max-height: 100%;
       background: var(--card-bg);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       border: 1px solid var(--border-color);
       overflow: hidden;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .top-bar {
@@ -64,6 +75,7 @@
       border-bottom: 1px solid var(--border-color);
       flex-wrap: wrap;
       gap: 15px;
+      flex-shrink: 0;
     }
 
     /* Левый блок: Кнопка с логотипом + Текстовое название */
@@ -139,6 +151,7 @@
       background: #fff;
       border-bottom: 1px solid var(--border-color);
       font-size: 0.95rem;
+      flex-shrink: 0;
     }
 
     .user-profile-info {
@@ -216,7 +229,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 25px 30px 15px;
+      padding: 20px 30px 10px;
+      flex-shrink: 0;
     }
 
     .month-display {
@@ -246,7 +260,11 @@
     }
 
     .calendar-body {
-      padding: 0 30px 30px;
+      padding: 0 30px 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
     }
 
     .weekdays-grid {
@@ -257,6 +275,7 @@
       color: var(--text-muted);
       margin-bottom: 10px;
       font-size: 0.9rem;
+      flex-shrink: 0;
     }
 
     .days-grid {
@@ -351,8 +370,9 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
       background: rgba(0, 0, 0, 0.4);
       display: none;
       justify-content: center;
@@ -463,6 +483,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(5px);
       display: flex;
@@ -497,55 +518,56 @@
     /* Адаптивные стили под мобильные телефоны */
     @media (max-width: 600px) {
       body {
-        padding: 8px;
+        padding: 5px;
       }
 
       .app-container {
         border-radius: 12px;
+        height: 100%;
       }
 
       .top-bar {
-        padding: 10px 12px;
+        padding: 8px 10px;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
       }
 
       .brand-title {
-        font-size: 1rem;
+        font-size: 0.95rem;
       }
 
       .logo-btn {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
       }
 
       .clock-container {
-        font-size: 0.75rem;
-        padding: 4px 8px;
+        font-size: 0.7rem;
+        padding: 4px 6px;
       }
 
       .user-bar {
-        padding: 10px 12px;
+        padding: 8px 10px;
       }
 
       .calendar-header {
-        padding: 15px 12px 10px;
+        padding: 10px 10px 6px;
       }
 
       .month-display {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
       }
 
       .nav-btn {
-        width: 34px;
-        height: 34px;
-        font-size: 1rem;
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
       }
 
       .calendar-body {
-        padding: 0 10px 15px;
+        padding: 0 8px 10px;
       }
 
       .days-grid {
@@ -558,25 +580,23 @@
       }
 
       .today-btn {
-        bottom: 15px;
-        right: 15px;
-        width: 44px;
-        height: 44px;
-        font-size: 1rem;
+        bottom: 12px;
+        right: 12px;
+        width: 42px;
+        height: 42px;
+        font-size: 0.95rem;
       }
 
-      /* Трансформация модального окна на телефоне в нижний шторный блок */
+      /* Окно записи строго по центру экрана */
       .modal-overlay {
-        align-items: flex-end;
+        align-items: center;
+        justify-content: center;
       }
 
       .modal-content {
-        width: 100%;
-        max-width: 100%;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
+        width: 92%;
+        max-width: 400px;
+        border-radius: var(--radius);
         padding: 20px 15px;
         max-height: 80vh;
       }
